@@ -1,0 +1,12 @@
+profile: local
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:oauth2authorizer
+    username: oauth2authorizer
+  h2:
+    console:
+      enabled: true
+  jpa:
+    show-sql: true
