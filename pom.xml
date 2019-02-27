@@ -91,6 +91,12 @@
                 <groupId>br.com.aqueteron</groupId>
                 <artifactId>common-jersey-utility</artifactId>
                 <version>${common.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
