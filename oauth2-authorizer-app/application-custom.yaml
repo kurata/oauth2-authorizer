@@ -1,0 +1,7 @@
+profile: dev
+
+spring.datasource:
+  driver-class-name: com.mysql.jdbc.Driver
+  url: jdbc:mysql://${db_host}:${db_port}/${db_schema}?allowPublicKeyRetrieval=true&useSSL=false
+  username: ${db_username}
+  password: ${db_password}

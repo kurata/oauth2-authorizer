@@ -1,0 +1,7 @@
+profile: dev
+
+spring.datasource:
+  driver-class-name: com.mysql.jdbc.Driver
+  url: jdbc:mysql://192.168.56.101:3306/oauth2authorizer?allowPublicKeyRetrieval=true&useSSL=false
+  username: oauth2authorizer
+  password: oauth2authorizer

@@ -1,0 +1,28 @@
+server:
+  port: 8080
+  servlet.path: /
+  error:
+    whitelabel:
+      enabled: false
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+
+spring:
+  application:
+    # IDENTITY (ContextIdApplicationContextInitializer)
+    name: OAutho2 Authorizer
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  profiles:
+    active: dev
+
+jks:
+  name: aqueteron.jks
+  keypass: $2a$10$l0jS.U0HHBIVTBvWRkQSqOTwKRGhr21I2qXfq8MF0cBF9Z3L0NCGe
+  alias: oauth2authorizer
+  aliaspass: $2a$10$2ZosIWqCkyL0MufLuaGaXev6Rgpan7CxYEj7NLr5S0bqD0w4P71D.
