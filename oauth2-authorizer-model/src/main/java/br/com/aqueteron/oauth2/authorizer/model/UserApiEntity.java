@@ -1,6 +1,6 @@
 package br.com.aqueteron.oauth2.authorizer.model;
 
-import br.com.aqueteron.common.utility.StringUtils;
+import br.com.aqueteron.oauth2.authorizer.utils.StringUtils;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -63,4 +63,5 @@ public class UserApiEntity implements Serializable, Comparable<UserApiEntity> {
     public String toString() {
         return String.format(TO_STRING_FORMAT, this.login, StringUtils.mask(this.password));
     }
+
 }

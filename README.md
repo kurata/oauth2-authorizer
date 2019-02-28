@@ -6,7 +6,7 @@ This project provides an OAuth2 Authorizer implementation based in Spring Boot a
 ```
 $ git clone ...
 $ mvn install
-$ mvn spring-boot:run
+$ java -jar oauth2-authorizer-app\target\oauth2-authorizer-app-1.0-SNAPSHOT.jar --spring.profiles.active=local
 ```
 
-Use the `local` profile 
+Use the `local` profile to run OAuth2-Authorizer with H2 database. 

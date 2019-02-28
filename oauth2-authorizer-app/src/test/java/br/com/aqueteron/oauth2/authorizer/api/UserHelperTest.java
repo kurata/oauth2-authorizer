@@ -1,5 +1,6 @@
-package br.com.aqueteron.oauth2.authorizer;
+package br.com.aqueteron.oauth2.authorizer.api;
 
+import br.com.aqueteron.oauth2.authorizer.api.UserHelper;
 import br.com.aqueteron.oauth2.authorizer.business.User;
 import br.com.aqueteron.oauth2.authorizer.model.UserApiEntity;
 import org.junit.Test;

@@ -1,7 +1,6 @@
-package br.com.aqueteron.oauth2.authorizer;
+package br.com.aqueteron.oauth2.authorizer.security;
 
-import br.com.aqueteron.common.ApiResourceSecurityDefinition;
-import br.com.aqueteron.common.jersey.ErrorApiEntity;
+import br.com.aqueteron.oauth2.authorizer.api.ErrorApiEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

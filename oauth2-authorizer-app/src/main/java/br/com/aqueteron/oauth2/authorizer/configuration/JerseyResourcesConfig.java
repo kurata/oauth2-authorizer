@@ -3,8 +3,8 @@ package br.com.aqueteron.oauth2.authorizer.configuration;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.ApplicationPath;
 
-import br.com.aqueteron.oauth2.authorizer.OAuth2AuthorizerAuthenticationFilter;
-import br.com.aqueteron.oauth2.authorizer.UserApiResource;
+import br.com.aqueteron.oauth2.authorizer.security.OAuth2AuthorizerAuthenticationFilter;
+import br.com.aqueteron.oauth2.authorizer.api.UserApiResource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.stereotype.Component;
 

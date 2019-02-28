@@ -1,6 +1,6 @@
 package br.com.aqueteron.oauth2.authorizer.business;
 
-import br.com.aqueteron.common.utility.StringUtils;
+import br.com.aqueteron.oauth2.authorizer.utils.StringUtils;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -108,4 +108,5 @@ public class User implements Serializable, Comparable<User> {
                 this.isEnabled,
                 this.roles);
     }
+
 }

@@ -1,5 +1,6 @@
-package br.com.aqueteron.oauth2.authorizer;
+package br.com.aqueteron.oauth2.authorizer.security;
 
+import br.com.aqueteron.oauth2.authorizer.security.OAuth2AuthorizerAuthenticationFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
