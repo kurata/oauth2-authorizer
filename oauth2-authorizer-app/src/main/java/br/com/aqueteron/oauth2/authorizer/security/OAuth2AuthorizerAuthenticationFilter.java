@@ -69,6 +69,7 @@ public class OAuth2AuthorizerAuthenticationFilter implements ContainerRequestFil
                 }
             }
         }
+        LOGGER.debug("RequestContext filtered.");
     }
 
     private Response buildErrorResponse(final Status status, final String message) {

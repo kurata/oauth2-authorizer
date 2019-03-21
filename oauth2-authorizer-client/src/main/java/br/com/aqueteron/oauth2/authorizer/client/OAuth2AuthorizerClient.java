@@ -3,10 +3,13 @@ package br.com.aqueteron.oauth2.authorizer.client;
 import br.com.aqueteron.oauth2.authorizer.model.UserApiEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -14,6 +17,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +31,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -56,6 +62,8 @@ public class OAuth2AuthorizerClient {
 
     private final URI hostUri;
 
+    private final ClientInfo clientInfo;
+
     private AccessToken accessToken;
 
     private RsaVerifier rsaVerifier;
@@ -70,13 +78,9 @@ public class OAuth2AuthorizerClient {
                 .setHost(serverInfo.getHost())
                 .setPort(serverInfo.getPort())
                 .build();
-        this.rsaVerifier = new RsaVerifier(this.getTokenKey().getPublicKey());
-        Optional<AccessToken> loadResult = loadAccessToken(clientInfo.getId(), clientInfo.getSecret(), clientInfo.getScope());
-        if (loadResult.isPresent()) {
-            this.accessToken = loadResult.get();
-        } else {
-            this.accessToken = new AccessToken();
-        }
+        this.clientInfo = clientInfo;
+        this.rsaVerifier = null;
+        this.accessToken = null;
     }
 
     OAuth2AuthorizerClient(final HttpClient httpClient, final ObjectMapper objectMapper, final URI hostUri, final RsaVerifier rsaVerifier, final AccessToken accessToken) {
@@ -85,9 +89,29 @@ public class OAuth2AuthorizerClient {
         this.hostUri = hostUri;
         this.rsaVerifier = rsaVerifier;
         this.accessToken = accessToken;
+        this.clientInfo = null;
     }
 
-    TokenKey getTokenKey() {
+    RsaVerifier getRsaVerifier() {
+        if (this.rsaVerifier == null) {
+            this.rsaVerifier = new RsaVerifier(this.getTokenKey().getPublicKey());
+        }
+        return this.rsaVerifier;
+    }
+
+    public AccessToken getAccessToken() {
+        if (this.accessToken == null) {
+            Optional<AccessToken> loadResult = loadAccessToken(this.clientInfo.getId(), this.clientInfo.getSecret(), this.clientInfo.getScope());
+            if (loadResult.isPresent()) {
+                this.accessToken = loadResult.get();
+            } else {
+                this.accessToken = new AccessToken();
+            }
+        }
+        return this.accessToken;
+    }
+
+    public TokenKey getTokenKey() {
         try {
             URI getFromToUri = new URIBuilder(this.hostUri).setPath(VALIDATE_TOKEN_PATH).build();
             HttpResponse httpResponse = this.httpClient.execute(new HttpGet(getFromToUri));
@@ -105,7 +129,7 @@ public class OAuth2AuthorizerClient {
 
     public Optional<JwtTokenClaims> decodeAndVerify(final String token) {
         try {
-            Jwt jwt = JwtHelper.decodeAndVerify(token, this.rsaVerifier);
+            Jwt jwt = JwtHelper.decodeAndVerify(token, this.getRsaVerifier());
             return Optional.of(this.objectMapper.readValue(jwt.getClaims(), JwtTokenClaims.class));
         } catch (IllegalArgumentException e) {
             LOGGER.warn(String.format("The token: '%s' is invalid JWT token.", token), e);
@@ -118,33 +142,31 @@ public class OAuth2AuthorizerClient {
         }
     }
 
-    public AccessToken getAccessToken() {
-        return this.accessToken;
-    }
-
     private Optional<AccessToken> loadAccessToken(final String clientId, final String clientSecret, final String scope) {
         try {
             URI getFromToUri = new URIBuilder(this.hostUri).setPath("oauth/token").build();
             HttpPost httpPost = new HttpPost(getFromToUri);
-//            httpPost.setHeader("Content-Type","application/x-www-form-urlencoded");
-            HttpEntity entity = MultipartEntityBuilder.create()
-                    .addTextBody("grant_type", "client_credentials")
-                    .addTextBody("client_id", clientId)
-                    .addTextBody("client_secret", clientSecret)
-                    .addTextBody("scope", scope).build();
-            httpPost.setEntity(entity);
+
+            List<NameValuePair> form = new ArrayList<>(4);
+            form.add(new BasicNameValuePair("grant_type", "client_credentials"));
+            form.add(new BasicNameValuePair("client_id", clientId));
+            form.add(new BasicNameValuePair("client_secret", clientSecret));
+            form.add(new BasicNameValuePair("scope", scope));
+
+            httpPost.setEntity(new UrlEncodedFormEntity(form));
             return this.executeHttpUriRequest(httpPost, AccessToken.class);
         } catch (URISyntaxException e) {
             throw new OAuth2AuthorizerClientRuntimeException(URI_SYNTAX_EXCEPTION, e);
+        } catch (UnsupportedEncodingException e) {
+            throw new OAuth2AuthorizerClientRuntimeException(URI_SYNTAX_EXCEPTION, e);
         }
-
     }
 
     public Optional<UserApiEntity> getUserByLogin(final String userLogin) {
         try {
             URI getFromToUri = new URIBuilder(this.hostUri).setPath(String.format(USER_WITH_ID_RESOURCE_PATH, userLogin)).build();
             HttpGet httpGet = new HttpGet(getFromToUri);
-            httpGet.addHeader("Authorization", "Bearer " + this.accessToken.getValue());
+            httpGet.addHeader("Authorization", "Bearer " + this.getAccessToken().getValue());
             return executeHttpUriRequest(httpGet, UserApiEntity.class);
         } catch (URISyntaxException e) {
             throw new OAuth2AuthorizerClientRuntimeException(URI_SYNTAX_EXCEPTION, e);
@@ -155,7 +177,7 @@ public class OAuth2AuthorizerClient {
         try {
             URI postFromToUri = new URIBuilder(hostUri).setPath(USER_RESROUCE_PATH).build();
             HttpPost httpPost = new HttpPost(postFromToUri);
-            httpPost.addHeader("Authorization", "Bearer " + this.accessToken.getValue());
+            httpPost.addHeader("Authorization", "Bearer " + this.getAccessToken().getValue());
             StringEntity stringEntity = new StringEntity(objectMapper.writeValueAsString(userApiEntity));
             stringEntity.setContentType("application/json");
             httpPost.setEntity(stringEntity);
@@ -168,29 +190,30 @@ public class OAuth2AuthorizerClient {
     private <T> Optional<T> executeHttpUriRequest(final HttpUriRequest httpUriRequest, final Class<T> valueType) {
         try {
             HttpResponse httpResponse = this.httpClient.execute(httpUriRequest);
+            String contentString = new String(httpResponse.getEntity().getContent().readAllBytes());
             if ("GET".equals(httpUriRequest.getMethod()) && OK == httpResponse.getStatusLine().getStatusCode()) {
-                return Optional.of(readContent(httpResponse.getEntity(), valueType));
+                return Optional.of(readContent(contentString, valueType));
             }
             if ("POST".equals(httpUriRequest.getMethod())) {
                 if (OK == httpResponse.getStatusLine().getStatusCode()) {
-                    return Optional.of(readContent(httpResponse.getEntity(), valueType));
+                    return Optional.of(readContent(contentString, valueType));
                 }
                 if (CREATED == httpResponse.getStatusLine().getStatusCode()) {
-                    return Optional.of(readContent(httpResponse.getEntity(), valueType));
+                    return Optional.of(readContent(contentString, valueType));
                 }
-                throw new OAuth2AuthorizerClientRuntimeException("Error to try register a User.");
+                throw new OAuth2AuthorizerClientRuntimeException(String.format("Error to try register a User. %s", contentString));
             }
             if ("PUT".equals(httpUriRequest.getMethod())) {
                 if (OK == httpResponse.getStatusLine().getStatusCode()) {
-                    return Optional.of(readContent(httpResponse.getEntity(), valueType));
+                    return Optional.of(readContent(contentString, valueType));
                 }
-                throw new OAuth2AuthorizerClientRuntimeException("Error to try update a User.");
+                throw new OAuth2AuthorizerClientRuntimeException(String.format("Error to try update a User. %s", contentString));
             }
             if ("DELETE".equals(httpUriRequest.getMethod())) {
                 if (OK == httpResponse.getStatusLine().getStatusCode()) {
                     return Optional.empty();
                 }
-                throw new OAuth2AuthorizerClientRuntimeException("Error to try delete User.");
+                throw new OAuth2AuthorizerClientRuntimeException(String.format("Error to try delete User.", contentString));
             }
         } catch (ClientProtocolException e) {
             throw new OAuth2AuthorizerClientRuntimeException(CLIENT_PROTOCOL_EXCEPTION_MESSAGE, e);
@@ -200,8 +223,7 @@ public class OAuth2AuthorizerClient {
         return Optional.empty();
     }
 
-    private <T> T readContent(final HttpEntity httpEntity, final Class<T> valueType) throws IOException {
-        InputStream inputStream = httpEntity.getContent();
-        return objectMapper.readValue(inputStream, valueType);
+    private <T> T readContent(final String contentString, final Class<T> valueType) throws IOException {
+        return this.objectMapper.readValue(contentString, valueType);
     }
 }

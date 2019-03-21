@@ -148,17 +148,13 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <addResources>true</addResources>
-                    <mainClass>${start-class}</mainClass>
+                    <classifier>exec</classifier>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
-                        <configuration>
-                            <mainClass>${start-class}</mainClass>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -15,15 +15,15 @@ public interface UserApiResource {
 
     @GET
     @Produces(value = {"application/json"})
-    Response getUserSet(@Context SecurityContext securityContext);
+    Response getUserSet(@Context final SecurityContext securityContext);
 
     @POST
     @Consumes(value = {"application/json"})
     @Produces(value = {"application/json"})
-    Response postUser(UserApiEntity newUserApiEntity, @Context SecurityContext securityContext);
+    Response postUser(final UserApiEntity newUserApiEntity, @Context final SecurityContext securityContext);
 
     @GET
     @Path("/{login}")
     @Produces(value = {"application/json"})
-    Response getUser(@PathParam("login") String login, @Context SecurityContext securityContext);
+    Response getUser(@PathParam("login") final String login, @Context final SecurityContext securityContext);
 }

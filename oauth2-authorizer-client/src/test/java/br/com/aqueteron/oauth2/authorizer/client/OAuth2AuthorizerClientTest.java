@@ -63,7 +63,7 @@ public class OAuth2AuthorizerClientTest {
     }
 
     @Test
-    public void decodeAndValidate() throws URISyntaxException {
+    public void decodeAndValidateTest() throws URISyntaxException {
         JwtTokenClaims jwtTokenClaims = new JwtTokenClaims("11fdb2d3-fff1-4a02-9884-afe890f95f25");
         Set<String> audienceSet = new HashSet<>();
         audienceSet.add("fromto-resource");
@@ -208,12 +208,17 @@ public class OAuth2AuthorizerClientTest {
     @Test
     public void getUserByLoginNotFountTest() throws IOException {
         HttpResponse getHttpResponseMock = mock(HttpResponse.class);
+        HttpEntity httpEntityMock = mock(HttpEntity.class);
+        InputStream inputStreamMock = mock(InputStream.class);
 
         StatusLine statusLineMock = mock(StatusLine.class);
         when(statusLineMock.getStatusCode()).thenReturn(404);
         when(getHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
 
         when(this.httpClientMock.execute(any(HttpGet.class))).thenReturn(getHttpResponseMock);
+        when(getHttpResponseMock.getEntity()).thenReturn(httpEntityMock);
+        when(httpEntityMock.getContent()).thenReturn(inputStreamMock);
+        when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
 
         Optional<UserApiEntity> response = this.oAuth2AuthorizerClient.getUserByLogin("login");
         assertFalse(response.isPresent());
@@ -245,10 +250,15 @@ public class OAuth2AuthorizerClientTest {
         UserApiEntity user = new UserApiEntity("login", "password");
 
         HttpResponse getHttpResponseMock = mock(HttpResponse.class);
+        HttpEntity httpEntityMock = mock(HttpEntity.class);
+        InputStream inputStreamMock = mock(InputStream.class);
 
         StatusLine statusLineMock = mock(StatusLine.class);
         when(statusLineMock.getStatusCode()).thenReturn(400);
         when(getHttpResponseMock.getStatusLine()).thenReturn(statusLineMock);
+        when(getHttpResponseMock.getEntity()).thenReturn(httpEntityMock);
+        when(httpEntityMock.getContent()).thenReturn(inputStreamMock);
+        when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
 
         when(this.httpClientMock.execute(any(HttpPost.class))).thenReturn(getHttpResponseMock);
         this.oAuth2AuthorizerClient.postUser(user);
