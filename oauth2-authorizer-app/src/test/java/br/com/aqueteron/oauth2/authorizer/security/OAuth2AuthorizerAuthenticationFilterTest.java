@@ -1,5 +1,6 @@
 package br.com.aqueteron.oauth2.authorizer.security;
 
+import br.com.aqueteron.oauth2.authorizer.api.ErrorApiEntity;
 import br.com.aqueteron.oauth2.authorizer.security.OAuth2AuthorizerAuthenticationFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +12,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import java.util.HashSet;

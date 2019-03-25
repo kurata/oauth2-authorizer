@@ -46,31 +46,31 @@ public class OAuth2AuthorizerAuthenticationFilter implements ContainerRequestFil
             // Get the HTTP Authorization header from the request
             String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
 
-            // Check if the HTTP Authorization header is present and formatted correctly
-            if (authorizationHeader == null) {
-                requestContext.abortWith(buildErrorResponse(Status.UNAUTHORIZED, "Authorization header must be provided."));
-            } else {
-                if (!authorizationHeader.startsWith("Bearer")) {
-                    requestContext.abortWith(buildErrorResponse(Status.UNAUTHORIZED, "Bearer token must be provided in authorization header."));
-                } else {
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
+                try {
                     // Extract the token from the HTTP Authorization header
                     String token = authorizationHeader.substring("Bearer".length()).trim();
 
-                    try {
-                        // Validate the token
-                        OAuth2AccessToken accessToken = this.tokenStore.readAccessToken(token);
-                        if (!havePermition(requestMethod, requestPath, accessToken.getScope())) {
-                            requestContext.abortWith(buildErrorResponse(Status.UNAUTHORIZED, "The token provided don't have the scope required."));
-                        }
-                    } catch (Exception e) {
-                        LOGGER.warn(e.getMessage(), e);
-                        requestContext.abortWith(Response.status(Status.UNAUTHORIZED).build());
+                    // Validate the token
+                    OAuth2AccessToken accessToken = this.tokenStore.readAccessToken(token);
+                    if (!havePermition(requestMethod, requestPath, accessToken.getScope())) {
+                        requestContext.abortWith(buildErrorResponse(Status.UNAUTHORIZED, "The token provided don't have the scope required."));
                     }
+                } catch (Exception e) {
+                    LOGGER.warn(e.getMessage(), e);
+                    requestContext.abortWith(Response.status(Status.UNAUTHORIZED).build());
+                }
+            } else {
+                if (authorizationHeader == null) {
+                    requestContext.abortWith(buildErrorResponse(Status.UNAUTHORIZED, "Authorization header must be provided."));
+                } else {
+                    requestContext.abortWith(buildErrorResponse(Status.UNAUTHORIZED, "Bearer token must be provided in authorization header."));
                 }
             }
         }
         LOGGER.debug("RequestContext filtered.");
     }
+
 
     private Response buildErrorResponse(final Status status, final String message) {
         return Response.status(status).entity(new ErrorApiEntity(status, message)).build();

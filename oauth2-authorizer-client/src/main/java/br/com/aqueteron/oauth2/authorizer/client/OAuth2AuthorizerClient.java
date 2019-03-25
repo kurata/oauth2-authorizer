@@ -3,8 +3,6 @@ package br.com.aqueteron.oauth2.authorizer.client;
 import br.com.aqueteron.oauth2.authorizer.model.UserApiEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.Consts;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -15,7 +13,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
@@ -155,9 +152,7 @@ public class OAuth2AuthorizerClient {
 
             httpPost.setEntity(new UrlEncodedFormEntity(form));
             return this.executeHttpUriRequest(httpPost, AccessToken.class);
-        } catch (URISyntaxException e) {
-            throw new OAuth2AuthorizerClientRuntimeException(URI_SYNTAX_EXCEPTION, e);
-        } catch (UnsupportedEncodingException e) {
+        } catch (URISyntaxException | UnsupportedEncodingException e) {
             throw new OAuth2AuthorizerClientRuntimeException(URI_SYNTAX_EXCEPTION, e);
         }
     }
@@ -173,7 +168,7 @@ public class OAuth2AuthorizerClient {
         }
     }
 
-    public Optional<UserApiEntity> postUser(final UserApiEntity userApiEntity) throws OAuth2AuthorizerClientException {
+    public Optional<UserApiEntity> postUser(final UserApiEntity userApiEntity) {
         try {
             URI postFromToUri = new URIBuilder(hostUri).setPath(USER_RESROUCE_PATH).build();
             HttpPost httpPost = new HttpPost(postFromToUri);
@@ -213,7 +208,7 @@ public class OAuth2AuthorizerClient {
                 if (OK == httpResponse.getStatusLine().getStatusCode()) {
                     return Optional.empty();
                 }
-                throw new OAuth2AuthorizerClientRuntimeException(String.format("Error to try delete User.", contentString));
+                throw new OAuth2AuthorizerClientRuntimeException(String.format("Error to try delete User."));
             }
         } catch (ClientProtocolException e) {
             throw new OAuth2AuthorizerClientRuntimeException(CLIENT_PROTOCOL_EXCEPTION_MESSAGE, e);
