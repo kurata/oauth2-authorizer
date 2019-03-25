@@ -208,7 +208,7 @@ public class OAuth2AuthorizerClient {
                 if (OK == httpResponse.getStatusLine().getStatusCode()) {
                     return Optional.empty();
                 }
-                throw new OAuth2AuthorizerClientRuntimeException(String.format("Error to try delete User."));
+                throw new OAuth2AuthorizerClientRuntimeException("Error to try delete User.");
             }
         } catch (ClientProtocolException e) {
             throw new OAuth2AuthorizerClientRuntimeException(CLIENT_PROTOCOL_EXCEPTION_MESSAGE, e);
