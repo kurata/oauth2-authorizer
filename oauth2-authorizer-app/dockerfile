@@ -1,0 +1,53 @@
+FROM oraclelinux:7-slim
+MAINTAINER Kurata <fernando.kurata@gmail.com>
+
+VOLUME /tmp
+EXPOSE 8080
+
+ARG JAR_FILE
+
+ENV env local
+ENV db_host localhost
+ENV db_port 3306
+ENV db_schema oauth2authorizer
+ENV db_username oauth2authorizer
+ENV db_password oauth2authorizer
+
+ENV JAVA_HOME /usr/java/jdk-11
+ENV PATH $JAVA_HOME/bin:$PATH
+
+ENV JAVA_VERSION 11.0.2
+ENV JAVA_URL https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_linux-x64_bin.tar.gz
+ENV JAVA_SHA256 99be79935354f5c0df1ad293620ea36d13f48ec3ea870c838f20c504c9668b57
+
+RUN set -eux; \
+	yum install -y \
+		gzip \
+		tar \
+		\
+		freetype fontconfig \
+	; \
+	rm -rf /var/cache/yum
+
+RUN set -eux; \
+	\
+	curl -fL -o /openjdk.tgz "$JAVA_URL"; \
+	echo "$JAVA_SHA256 */openjdk.tgz" | sha256sum -c -; \
+	mkdir -p "$JAVA_HOME"; \
+	tar --extract --file /openjdk.tgz --directory "$JAVA_HOME" --strip-components 1; \
+	rm /openjdk.tgz; \
+	\
+	ln -sfT "$JAVA_HOME" /usr/java/default; \
+	ln -sfT "$JAVA_HOME" /usr/java/latest; \
+	for bin in "$JAVA_HOME/bin/"*; do \
+		base="$(basename "$bin")"; \
+		[ ! -e "/usr/bin/$base" ]; \
+		alternatives --install "/usr/bin/$base" "$base" "$bin" 20000; \
+	done;
+
+COPY ./application-custom.yaml /
+RUN sed -e "s/\${db_host}/$db_host/" -e "s/\${db_port}/$db_port/" -e "s/\${db_schema}/$db_schema/" -e "s/\${db_username}/$db_username/" -e "s/\${db_password}/$db_password/" application-custom.yaml
+
+ADD ${JAR_FILE} app.jar
+
+ENTRYPOINT ["java","-jar","app.jar","--spring.profiles.active=${env}"]

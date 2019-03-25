@@ -10,3 +10,11 @@ $ java -jar oauth2-authorizer-app\target\oauth2-authorizer-app-1.0-SNAPSHOT.jar 
 ```
 
 Use the `local` profile to run OAuth2-Authorizer with H2 database. 
+
+## Generating new Docker Image
+
+```
+mvn dockerfile:build
+
+mvn dockerfile:push
+```
