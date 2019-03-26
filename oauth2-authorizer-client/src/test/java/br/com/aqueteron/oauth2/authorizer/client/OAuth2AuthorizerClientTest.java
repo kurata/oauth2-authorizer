@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.security.jwt.Jwt;
@@ -37,6 +38,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(JwtHelper.class)
+@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.w3c.*", "org.apache.logging.log4j.*"})
 public class OAuth2AuthorizerClientTest {
 
     private static final String PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkLjYQqbkPQqIaoivNxxz/tjOb7S2LvVMj/giDt6nmzu+4gaTLcxbNWQ0lQKgNO4eRW7Ep5Bkt6HrA/V1HNWO4V1zrXBo2ypQT514ZsZaa294cnRL9PmarhVS07SmhiJch7kCNYvvKzJtvR4QQslSTUNi3ciT1NNBXkEonRgf2O/j1X/E0VUP8GyLFUYM02LBjIOblAkcFZFJ5LPn5Y1YTdv1GWcYArvyjqLuSOxK9Qn7zhEcH+q7jJbb3ux/niT1EUS1NXz6UJW7xT0KRcEb8eUkPp9iB1yOB1rxVD6NufuuafNcAI9GVTlct+jsP7p5wQWuiFshJllyuLb5jFOBLwIDAQAB\n-----END PUBLIC KEY-----";
